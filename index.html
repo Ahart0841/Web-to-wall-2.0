@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Send To Wall - Discord Edition</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    input[type=text] {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid red;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: red;
+      color: white;
+      font-size: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .transmitting-message, .countdown {
+      font-size: 20px;
+      padding: 10px;
+      border: 2px solid red;
+      border-radius: 5px;
+      display: none;
+      margin-top: 10px;
+    }
+
+    .transmitting-message {
+      animation: blink 300ms infinite;
+    }
+
+    @keyframes blink {
+      0% { background-color: red; color: white; }
+      50% { background-color: black; color: red; }
+      100% { background-color: red; color: white; }
+    }
+
+    #designerInfo {
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    #rules {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      border: 1px solid red;
+      padding: 10px;
+      width: 300px;
+      text-align: left;
+    }
+
+    #rules ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #rules ul li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="rules">
+    <p>Rules:</p>
+    <ul>
+      <li>1. Nothing racist or offensive.</li>
+      <li>2. Do not spam messages.</li>
+      <li>3. Do not share personal information.</li>
+      <li>4. All messages are logged.</li>
+      <li>5. Emoji do in fact not work so do not try.</li>
+    </ul>
+  </div>
+
+  <div id="designerInfo">
+    Developed by <a href="https://github.com/Ahart0841" style="color: #007bff; text-decoration: none;">Ahart0841</a> and
+    <a href="https://github.com/Fakemayham084" style="color: #007bff; text-decoration: none;">Fakemayham084</a>
+    (<span style="color: green;">version 3.2.2</span>)
+  </div>
+
+  <form id="messageForm">
+    <input type="text" id="messageInput" name="message" maxlength="16" placeholder="Enter message (max 16 characters)" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <div class="transmitting-message" id="transmittingMessage">TRANSMITTING MESSAGE</div>
+  <div class="countdown" id="countdown">You can type again in <span id="timer">10</span> seconds</div>
+
+  <script>
+    const form = document.getElementById('messageForm');
+    const transmittingMessage = document.getElementById('transmittingMessage');
+    const countdown = document.getElementById('countdown');
+    const timer = document.getElementById('timer');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = form.querySelector('button');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append("message", messageInput.value);
+
+      fetch("https://your-repl-name.username.repl.co/send-message", {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+        transmittingMessage.style.display = 'block';
+
+        setTimeout(() => {
+          transmittingMessage.style.display = 'none';
+          countdown.style.display = 'block';
+          let count = 10;
+          const countdownInterval = setInterval(() => {
+            count--;
+            timer.textContent = count;
+            if (count === 0) {
+              clearInterval(countdownInterval);
+              countdown.style.display = 'none';
+              messageInput.disabled = false;
+              sendButton.disabled = false;
+              messageInput.value = "";
+            }
+          }, 1000);
+        }, 5000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to send message.');
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>
